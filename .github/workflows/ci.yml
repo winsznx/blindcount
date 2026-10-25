@@ -3,12 +3,6 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env: { POSTGRES_USER: blindcount, POSTGRES_PASSWORD: blindcount, POSTGRES_DB: blindcount }
-        ports: ["5433:5432"]
-        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,7 +19,8 @@ jobs:
       - run: pnpm --filter @blindcount/db generate
       - run: pnpm typecheck
       - run: bash infra/scripts/setup-local.sh
-      - run: docker exec $(docker ps -qf ancestor=postgres:16-alpine) psql -U blindcount -c 'CREATE DATABASE blindcount_test' -c 'CREATE DATABASE blindcount_e2e' || true
+      # setup-local starts Postgres (compose) and Anvil, deploys the registry and writes .env
+      - run: docker exec compose-db-1 psql -U blindcount -c 'CREATE DATABASE blindcount_test' -c 'CREATE DATABASE blindcount_e2e' 
       - run: cd packages/db && DATABASE_URL=postgresql://blindcount:blindcount@localhost:5433/blindcount_test npx prisma migrate deploy
       - run: pnpm test
       - run: cd e2e && npx playwright install --with-deps chromium && npx playwright test
