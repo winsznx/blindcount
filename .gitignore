@@ -27,3 +27,5 @@ internal/
 .claude/
 .DS_Store
 data/research/source/
+.vercel
+.env*
