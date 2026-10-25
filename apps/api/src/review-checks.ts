@@ -1,4 +1,5 @@
 import { hashCanonical } from "@blindcount/crypto";
+import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import type { AppContext } from "./lib/context";
 
@@ -94,7 +95,7 @@ export async function runAiReview(ctx: AppContext, submissionVersionId: string):
       data: {
         organizationId: sv.organizationId,
         submissionVersionId: sv.id,
-        modelProvider: "ai-gateway",
+        modelProvider: ctx.cfg.AI_PROVIDER,
         modelName: ctx.cfg.AI_MODEL,
         promptVersion: AI_PROMPT_VERSION,
         resultSchemaVersion: "blindcount.ai-evidence.v1",
@@ -109,13 +110,35 @@ export async function runAiReview(ctx: AppContext, submissionVersionId: string):
     await record("ERROR", { error: "AI_UNAVAILABLE" });
     return { status: "ERROR", error: "AI is not configured; manual review required" };
   }
-  const recent = await ctx.prisma.aiAssessment.count({ where: { organizationId: sv.organizationId, modelProvider: "ai-gateway", createdAt: { gt: new Date(Date.now() - 3600_000) } } });
+  const recent = await ctx.prisma.aiAssessment.count({ where: { organizationId: sv.organizationId, modelProvider: ctx.cfg.AI_PROVIDER, createdAt: { gt: new Date(Date.now() - 3600_000) } } });
   if (recent >= 10) return { status: "ERROR", error: "Hourly AI quota reached for this organization" };
 
-  const images = await Promise.all(sv.evidence.slice(0, 3).map(async (e) => ({ id: e.id, url: `data:${e.mime};base64,${(await ctx.store.get(e.storageKey)).toString("base64")}` })));
+  const images = await Promise.all(sv.evidence.slice(0, 3).map(async (e) => ({ id: e.id, mime: e.mime as "image/jpeg" | "image/png", data: (await ctx.store.get(e.storageKey)).toString("base64") })));
+  const instruction = `Assess these evidence images. Use evidenceIds ${JSON.stringify(images.map((i) => i.id))}, in the order given. Return only JSON matching schema blindcount.ai-evidence.v1 with keys schema,evidenceIds,status,flags,summary,limitations,suggestedNextStep.`;
   const started = Date.now();
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
+      if (ctx.cfg.AI_PROVIDER === "anthropic") {
+        const client = new Anthropic({ apiKey: ctx.cfg.AI_API_KEY, timeout: 60_000, maxRetries: 0 });
+        const response = await client.messages.create({
+          model: ctx.cfg.AI_MODEL,
+          max_tokens: 4000,
+          system: AI_SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: [...images.map((i) => ({ type: "image" as const, source: { type: "base64" as const, media_type: i.mime, data: i.data } })), { type: "text" as const, text: instruction }],
+            },
+          ],
+        });
+        if (response.stop_reason === "refusal") throw new Error("model declined");
+        const text = response.content.map((b) => (b.type === "text" ? b.text : "")).join("");
+        const parsed = aiOutputSchema.safeParse(JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)));
+        if (!parsed.success) throw new Error("schema");
+        const flags = parsed.data.flags.map((f, n) => ({ ...f, id: `ai-${n}-${f.evidenceId}`, source: "ai" }));
+        await record(parsed.data.status, { flags, latency: Date.now() - started });
+        return { status: parsed.data.status };
+      }
       const res = await fetch(ctx.cfg.AI_GATEWAY_URL, {
         method: "POST",
         signal: AbortSignal.timeout(30_000),
@@ -128,8 +151,8 @@ export async function runAiReview(ctx: AppContext, submissionVersionId: string):
             {
               role: "user",
               content: [
-                { type: "text", text: `Assess these evidence images. Use evidenceIds ${JSON.stringify(images.map((i) => i.id))}. Return JSON matching schema blindcount.ai-evidence.v1 with keys schema,evidenceIds,status,flags,summary,limitations,suggestedNextStep.` },
-                ...images.map((i) => ({ type: "image_url", image_url: { url: i.url } })),
+                { type: "text", text: instruction },
+                ...images.map((i) => ({ type: "image_url", image_url: { url: `data:${i.mime};base64,${i.data}` } })),
               ],
             },
           ],

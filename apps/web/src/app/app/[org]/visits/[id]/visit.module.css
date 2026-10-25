@@ -10,7 +10,5 @@
 .addPhoto:hover { border-color: var(--primary); background: var(--accent-wash); }
 .addPhoto svg { width: 24px; height: 24px; }
 .stickyCta { display: grid; gap: 6px; }
-@media (max-width: 960px) {
-  .stickyCta { position: sticky; bottom: 76px; padding: 12px 0 4px; background: linear-gradient(to top, var(--surface) 70%, transparent); }
-}
+
 .missing { display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 8px; font-size: 12.5px; color: var(--error); text-align: center; background: var(--error-wash); }

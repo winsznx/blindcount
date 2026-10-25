@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.71.2",
     "@blindcount/contracts": "workspace:*",
     "@blindcount/crypto": "workspace:*",
     "@blindcount/db": "workspace:*",
