@@ -2,9 +2,9 @@
 
 **Count first. Compare later.** Field inspections that hide the pass threshold from the person counting, seal their first observation onchain, and give buyers a proof packet they can verify themselves.
 
-[![license: MIT](https://img.shields.io/badge/license-MIT-173B31)](LICENSE) ![contracts: 28 tests](https://img.shields.io/badge/contracts-28%20tests-1D7653) ![Ethereum Sepolia](https://img.shields.io/badge/registry-Ethereum%20Sepolia-34557A) ![source: Sourcify exact match](https://img.shields.io/badge/source-Sourcify%20exact%20match-1D7653)
+[![ci](https://github.com/winsznx/blindcount/actions/workflows/ci.yml/badge.svg)](https://github.com/winsznx/blindcount/actions/workflows/ci.yml) [![license: MIT](https://img.shields.io/badge/license-MIT-173B31)](LICENSE) ![contracts: 28 tests](https://img.shields.io/badge/contracts-28%20tests-1D7653) ![Ethereum Sepolia](https://img.shields.io/badge/registry-Ethereum%20Sepolia-34557A) ![source: Sourcify exact match](https://img.shields.io/badge/source-Sourcify%20exact%20match-1D7653)
 
-Track: **Sustainable Supply Chains**, IEEE ClimateChain Global Hackathon 2026.
+Track: **Sustainable Supply Chains**, IEEE ClimateChain Global Hackathon 2026 · Live app: [blindcount.vercel.app](https://blindcount.vercel.app)
 
 ## Why it exists
 
