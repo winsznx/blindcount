@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: blindcount
+      POSTGRES_PASSWORD: blindcount
+      POSTGRES_DB: blindcount
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    entrypoint: ["anvil", "--host", "0.0.0.0", "--chain-id", "31337"]
+    ports: ["8545:8545"]
+  migrate:
+    profiles: ["app"]
+    build: { context: ../.., dockerfile: apps/api/Dockerfile }
+    env_file: ../../.env.production
+    working_dir: /app/packages/db
+    command: ["npx", "prisma", "migrate", "deploy"]
+    depends_on: [db]
+  api:
+    profiles: ["app"]
+    build: { context: ../.., dockerfile: apps/api/Dockerfile }
+    env_file: ../../.env.production
+    environment: { RUN_WORKER_IN_PROCESS: "false" }
+    ports: ["127.0.0.1:4000:4000"]
+    volumes: [objects:/data]
+    depends_on: [db, migrate]
+    restart: unless-stopped
+  worker:
+    profiles: ["app"]
+    build: { context: ../.., dockerfile: apps/api/Dockerfile }
+    env_file: ../../.env.production
+    command: ["npx", "tsx", "src/worker-main.ts"]
+    volumes: [objects:/data]
+    depends_on: [db, migrate]
+    restart: unless-stopped
+volumes:
+  pgdata:
+  objects:
