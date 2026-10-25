@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/.next
+.env*
+!.env.example
+storage*
+interval
+internal
+e2e/test-results
+packages/contracts/out
+packages/contracts/cache
+.git

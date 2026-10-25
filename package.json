@@ -1,0 +1,29 @@
+{
+  "name": "blindcount",
+  "private": true,
+  "description": "Blind field inspections with sealed first observations and independently verifiable proof packets.",
+  "license": "MIT",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=12"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter ./apps/api --filter ./apps/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:migrate": "pnpm --filter @blindcount/db migrate",
+    "contracts:test": "cd packages/contracts && forge test",
+    "contracts:deploy:local": "pnpm --filter @blindcount/contracts deploy:local",
+    "contracts:deploy:testnet": "pnpm --filter @blindcount/contracts deploy:testnet",
+    "seed:demo": "pnpm --filter @blindcount/api seed:demo",
+    "verify:packet": "pnpm --filter @blindcount/verify-cli start",
+    "test:e2e": "pnpm --filter @blindcount/e2e test:e2e",
+    "infra:up": "docker compose -f infra/compose/docker-compose.yml up -d db",
+    "chain:local": "anvil --chain-id 31337 --port 8545",
+    "backup:verify": "bash infra/scripts/backup-verify.sh",
+    "lint": "pnpm -r typecheck",
+    "setup:local": "bash infra/scripts/setup-local.sh"
+  }
+}

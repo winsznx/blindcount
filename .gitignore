@@ -1,0 +1,29 @@
+# dependencies and builds
+node_modules
+.next
+next-env.d.ts
+dist
+coverage
+*.tsbuildinfo
+packages/contracts/out
+packages/contracts/cache
+packages/contracts/broadcast
+
+# secrets and environment files (the template is the only exception)
+.env
+.env.*
+!.env.example
+
+# local data, test artefacts
+storage/
+storage-test/
+storage-e2e/
+e2e/test-results/
+e2e/playwright-report/
+
+# private planning material and local tool config
+interval/
+internal/
+.claude/
+.DS_Store
+data/research/source/

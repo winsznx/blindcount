@@ -1,0 +1,31 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: blindcount, POSTGRES_PASSWORD: blindcount, POSTGRES_DB: blindcount }
+        ports: ["5433:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: pnpm }
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: pnpm install --frozen-lockfile
+      - name: Secret scan (no private keys or .env committed)
+        run: |
+          ! git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '.env.example'
+          ! git grep -nE '"d":"[A-Za-z0-9_-]{43}"' -- ':!*.md'
+      - name: Contracts
+        run: cd packages/contracts && forge test
+      - run: pnpm --filter @blindcount/db generate
+      - run: pnpm typecheck
+      - run: bash infra/scripts/setup-local.sh
+      - run: docker exec $(docker ps -qf ancestor=postgres:16-alpine) psql -U blindcount -c 'CREATE DATABASE blindcount_test' -c 'CREATE DATABASE blindcount_e2e' || true
+      - run: cd packages/db && DATABASE_URL=postgresql://blindcount:blindcount@localhost:5433/blindcount_test npx prisma migrate deploy
+      - run: pnpm test
+      - run: cd e2e && npx playwright install --with-deps chromium && npx playwright test
