@@ -1,0 +1,7 @@
+{
+  "name": "@blindcount/e2e",
+  "private": true,
+  "type": "module",
+  "scripts": { "test:e2e": "playwright test" },
+  "devDependencies": { "@playwright/test": "1.56.1", "@types/node": "22.10.2", "fflate": "0.8.2" }
+}
