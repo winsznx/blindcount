@@ -1,0 +1,565 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  AUDITOR
+  REVIEWER
+  CUSTODIAN
+}
+
+enum CohortState {
+  DRAFT
+  PUBLISH_PENDING
+  PUBLISH_FAILED
+  ACTIVE
+  CLOSING_PENDING
+  CLOSED
+  DISCLOSED
+  ARCHIVED
+  CANCELLED
+  SUSPENDED
+}
+
+enum AssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  RECEIVED
+  ANCHOR_PENDING
+  ANCHOR_FAILED
+  SEALED
+  REVIEW_PENDING
+  APPROVED
+  DISPUTED
+  AMENDMENT_REQUESTED
+  VOID_PENDING
+  VOIDED
+  EXPIRED
+}
+
+enum AnchorStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+}
+
+enum JobState {
+  QUEUED
+  RUNNING
+  SUBMITTED
+  DONE
+  FAILED
+  DEAD
+}
+
+model User {
+  id              String       @id @default(uuid()) @db.Uuid
+  email           String       @unique
+  emailVerifiedAt DateTime?    @map("email_verified_at") @db.Timestamptz
+  displayName     String       @map("display_name")
+  status          String       @default("ACTIVE")
+  lastLoginAt     DateTime?    @map("last_login_at") @db.Timestamptz
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  sessions        Session[]
+  memberships     Membership[]
+  deviceKeys      DeviceKey[]
+
+  @@map("users")
+}
+
+model LoginCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String
+  codeHash  String    @map("code_hash")
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  attempts  Int       @default(0)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([email, createdAt])
+  @@map("login_codes")
+}
+
+model Session {
+  id          String    @id @default(uuid()) @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  user        User      @relation(fields: [userId], references: [id])
+  tokenHash   String    @unique @map("token_hash")
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt   DateTime? @map("revoked_at") @db.Timestamptz
+  lastSeenAt  DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz
+  reauthedAt  DateTime  @default(now()) @map("reauthed_at") @db.Timestamptz
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([userId, expiresAt])
+  @@map("sessions")
+}
+
+model Organization {
+  id                String       @id @default(uuid()) @db.Uuid
+  name              String
+  countryCode       String       @map("country_code")
+  timeZone          String       @map("time_zone")
+  dataPolicyVersion String       @default("p0-2026-10") @map("data_policy_version")
+  retentionDays     Int          @default(365) @map("retention_days")
+  status            String       @default("ACTIVE")
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  memberships       Membership[]
+  programmes        Programme[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  userId         String       @map("user_id") @db.Uuid
+  user           User         @relation(fields: [userId], references: [id])
+  roles          Role[]
+  status         String       @default("ACTIVE")
+  authVersion    Int          @default(1) @map("auth_version")
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([organizationId, userId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  email          String
+  roles          Role[]
+  tokenHash      String    @unique @map("token_hash")
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz
+  acceptedAt     DateTime? @map("accepted_at") @db.Timestamptz
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz
+  invitedBy      String    @map("invited_by") @db.Uuid
+  deliveryStatus String    @default("QUEUED") @map("delivery_status")
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([organizationId, email])
+  @@map("invitations")
+}
+
+model DeviceKey {
+  id               String    @id @default(uuid()) @db.Uuid
+  organizationId   String    @map("organization_id") @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  user             User      @relation(fields: [userId], references: [id])
+  deviceLabel      String    @map("device_label")
+  publicJwk        Json      @map("public_jwk")
+  jwkThumbprint    String    @unique @map("jwk_thumbprint")
+  algorithm        String    @default("ES256")
+  attestationLevel String    @default("software_webcrypto") @map("attestation_level")
+  enrolledAt       DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
+
+  @@index([organizationId, userId])
+  @@map("device_keys")
+}
+
+model Programme {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  code           String
+  name           String
+  crop           String
+  regionLabel    String       @map("region_label")
+  purpose        String
+  startAt        DateTime     @map("start_at") @db.Timestamptz
+  endAt          DateTime     @map("end_at") @db.Timestamptz
+  retentionDays  Int          @default(365) @map("retention_days")
+  status         String       @default("ACTIVE")
+  dataSource     String       @default("SIMULATED_DEMO") @map("data_source")
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+  cohorts        Cohort[]
+  farms          Farm[]
+
+  @@unique([organizationId, code])
+  @@map("programmes")
+}
+
+model Cohort {
+  id                String           @id @default(uuid()) @db.Uuid
+  organizationId    String           @map("organization_id") @db.Uuid
+  programmeId       String           @map("programme_id") @db.Uuid
+  programme         Programme        @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  code              String
+  name              String
+  state             CohortState      @default(DRAFT)
+  dueAt             DateTime         @map("due_at") @db.Timestamptz
+  closingAfter      DateTime?        @map("closing_after") @db.Timestamptz
+  chainCampaignKey  String           @unique @map("chain_campaign_key")
+  cohortNonce       String           @map("cohort_nonce")
+  targetCommitment  String?          @map("target_commitment")
+  expectedCount     Int              @default(0) @map("expected_count")
+  rosterFrozenAt    DateTime?        @map("roster_frozen_at") @db.Timestamptz
+  publishedAt       DateTime?        @map("published_at") @db.Timestamptz
+  closedAt          DateTime?        @map("closed_at") @db.Timestamptz
+  disclosedAt       DateTime?        @map("disclosed_at") @db.Timestamptz
+  publishTxHashes   String[]         @default([]) @map("publish_tx_hashes")
+  closeTxHash       String?          @map("close_tx_hash")
+  disclosureTxHash  String?          @map("disclosure_tx_hash")
+  lastError         String?          @map("last_error")
+  createdBy         String           @map("created_by") @db.Uuid
+  createdAt         DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime         @updatedAt @map("updated_at") @db.Timestamptz
+  criterion         CriterionVersion?
+  assignments       Assignment[]
+
+  @@unique([programmeId, code])
+  @@index([organizationId, state])
+  @@map("cohorts")
+}
+
+model CriterionVersion {
+  id                    String    @id @default(uuid()) @db.Uuid
+  organizationId        String    @map("organization_id") @db.Uuid
+  cohortId              String    @unique @map("cohort_id") @db.Uuid
+  cohort                Cohort    @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  schemaVersion         String    @default("blindcount.criterion.v1") @map("schema_version")
+  operator              String    @default("gte")
+  unit                  String    @default("shade_trees")
+  targetCiphertext      String    @map("target_ciphertext")
+  targetSaltCiphertext  String    @map("target_salt_ciphertext")
+  keyRef                String    @map("key_ref")
+  canonicalTargetHashCt String    @map("canonical_target_hash_ciphertext")
+  commitment            String
+  createdBy             String    @map("created_by") @db.Uuid
+  lockedAt              DateTime? @map("locked_at") @db.Timestamptz
+  revealedAt            DateTime? @map("revealed_at") @db.Timestamptz
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("criteria_versions")
+}
+
+model Farm {
+  id               String       @id @default(uuid()) @db.Uuid
+  organizationId   String       @map("organization_id") @db.Uuid
+  programmeId      String       @map("programme_id") @db.Uuid
+  programme        Programme    @relation(fields: [programmeId], references: [id])
+  externalCode     String       @map("external_code")
+  displayPseudonym String       @map("display_pseudonym")
+  coarseRegion     String?      @map("coarse_region")
+  consentReference String?      @map("consent_reference")
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  assignments      Assignment[]
+
+  @@unique([programmeId, externalCode])
+  @@map("farms")
+}
+
+model Assignment {
+  id             String               @id @default(uuid()) @db.Uuid
+  organizationId String               @map("organization_id") @db.Uuid
+  cohortId       String               @map("cohort_id") @db.Uuid
+  cohort         Cohort               @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  farmId         String               @map("farm_id") @db.Uuid
+  farm           Farm                 @relation(fields: [farmId], references: [id], onDelete: Restrict)
+  auditorUserId  String               @map("auditor_user_id") @db.Uuid
+  assignmentKey  String               @unique @map("assignment_key")
+  keyNonce       String               @map("key_nonce")
+  code           String
+  status         AssignmentStatus     @default(PENDING)
+  dueAt          DateTime             @map("due_at") @db.Timestamptz
+  publishedAt    DateTime?            @map("published_at") @db.Timestamptz
+  lastSyncedAt   DateTime?            @map("last_synced_at") @db.Timestamptz
+  voidReason     String?              @map("void_reason")
+  voidTxHash     String?              @map("void_tx_hash")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  observation    Observation?
+  approvals      AssignmentApproval[]
+
+  @@unique([cohortId, farmId])
+  @@unique([cohortId, code])
+  @@index([organizationId, auditorUserId])
+  @@map("assignments")
+}
+
+model AssignmentApproval {
+  id             String     @id @default(uuid()) @db.Uuid
+  organizationId String     @map("organization_id") @db.Uuid
+  assignmentId   String     @map("assignment_id") @db.Uuid
+  assignment     Assignment @relation(fields: [assignmentId], references: [id])
+  action         String
+  approverId     String     @map("approver_id") @db.Uuid
+  reason         String
+  decision       String
+  decidedAt      DateTime   @default(now()) @map("decided_at") @db.Timestamptz
+
+  @@index([assignmentId, action, decidedAt])
+  @@map("assignment_approvals")
+}
+
+model Observation {
+  id                       String              @id @default(uuid()) @db.Uuid
+  organizationId           String              @map("organization_id") @db.Uuid
+  assignmentId             String              @unique @map("assignment_id") @db.Uuid
+  assignment               Assignment          @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  currentApprovedVersionId String?             @map("current_approved_version_id") @db.Uuid
+  reviewStatus             String              @default("NOT_STARTED") @map("review_status")
+  createdBy                String              @map("created_by") @db.Uuid
+  createdAt                DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  versions                 SubmissionVersion[]
+  reviewCases              ReviewCase[]
+  evaluations              Evaluation[]
+  reports                  Report[]
+
+  @@map("observations")
+}
+
+model SubmissionVersion {
+  id                     String         @id @default(uuid()) @db.Uuid
+  organizationId         String         @map("organization_id") @db.Uuid
+  observationId          String         @map("observation_id") @db.Uuid
+  observation            Observation    @relation(fields: [observationId], references: [id], onDelete: Restrict)
+  versionNumber          Int            @map("version_number")
+  previousVersionId      String?        @map("previous_version_id") @db.Uuid
+  idempotencyKey         String         @map("idempotency_key")
+  payloadJsonEncrypted   String         @map("payload_json_encrypted")
+  payloadSha256          String         @map("payload_sha256")
+  observedCount          Int            @map("observed_count")
+  commitment             String
+  commitmentSaltEncrypted String        @map("commitment_salt_encrypted")
+  clientNonce            String         @unique @map("client_nonce")
+  deviceSignature        String         @map("device_signature")
+  signatureFormat        String         @map("signature_format")
+  deviceKeyId            String         @map("device_key_id") @db.Uuid
+  deviceClaimedAt        DateTime       @map("device_claimed_at") @db.Timestamptz
+  receivedAt             DateTime       @default(now()) @map("received_at") @db.Timestamptz
+  receiptSignature       String         @map("receipt_signature")
+  anchorStatus           AnchorStatus   @default(PENDING) @map("anchor_status")
+  anchorTxHash           String?        @map("anchor_tx_hash")
+  anchorBlockNumber      BigInt?        @map("anchor_block_number")
+  anchorBlockHash        String?        @map("anchor_block_hash")
+  anchorConfirmedAt      DateTime?      @map("anchor_confirmed_at") @db.Timestamptz
+  reason                 String?
+  amendmentStatus        String?        @map("amendment_status")
+  evidence               EvidenceFile[]
+
+  @@unique([observationId, versionNumber])
+  @@unique([organizationId, idempotencyKey])
+  @@map("submission_versions")
+}
+
+model EvidenceFile {
+  id                  String             @id @default(uuid()) @db.Uuid
+  organizationId      String             @map("organization_id") @db.Uuid
+  assignmentId        String             @map("assignment_id") @db.Uuid
+  uploadedBy          String             @map("uploaded_by") @db.Uuid
+  submissionVersionId String?            @map("submission_version_id") @db.Uuid
+  submissionVersion   SubmissionVersion? @relation(fields: [submissionVersionId], references: [id])
+  storageKey          String             @unique @map("storage_key")
+  sha256              String
+  mime                String
+  byteSize            Int                @map("byte_size")
+  width               Int?
+  height              Int?
+  captureClaimedAt    DateTime?          @map("capture_claimed_at") @db.Timestamptz
+  receivedAt          DateTime           @default(now()) @map("received_at") @db.Timestamptz
+  consentFlag         Boolean            @map("consent_flag")
+  processingState     String             @default("VALIDATED") @map("processing_state")
+
+  @@index([sha256])
+  @@index([assignmentId])
+  @@map("evidence_files")
+}
+
+model AnchorJob {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  kind           String
+  entityId       String    @map("entity_id") @db.Uuid
+  eventKey       String    @unique @map("event_key")
+  payload        String?
+  attempts       Int       @default(0)
+  state          JobState  @default(QUEUED)
+  txHash         String?   @map("tx_hash")
+  lastErrorCode  String?   @map("last_error_code")
+  nextRetryAt    DateTime  @default(now()) @map("next_retry_at") @db.Timestamptz
+  lockedUntil    DateTime? @map("locked_until") @db.Timestamptz
+  finalizedAt    DateTime? @map("finalized_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([state, nextRetryAt])
+  @@map("anchor_jobs")
+}
+
+model ChainEvent {
+  id              String   @id @default(uuid()) @db.Uuid
+  chainId         Int      @map("chain_id")
+  contractAddress String   @map("contract_address")
+  txHash          String   @map("tx_hash")
+  logIndex        Int      @map("log_index")
+  blockHash       String   @map("block_hash")
+  blockNumber     BigInt   @map("block_number")
+  eventName       String   @map("event_name")
+  eventPayload    Json     @map("event_payload")
+  canonical       Boolean  @default(true)
+  recordedAt      DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+
+  @@unique([chainId, contractAddress, txHash, logIndex])
+  @@map("chain_events")
+}
+
+model ReviewCase {
+  id                 String         @id @default(uuid()) @db.Uuid
+  organizationId     String         @map("organization_id") @db.Uuid
+  observationId      String         @map("observation_id") @db.Uuid
+  observation        Observation    @relation(fields: [observationId], references: [id])
+  assignedReviewerId String?        @map("assigned_reviewer_id") @db.Uuid
+  state              String         @default("OPEN")
+  discrepancyType    String?        @map("discrepancy_type")
+  decision           String?
+  decisionReason     String?        @map("decision_reason")
+  decidedBy          String?        @map("decided_by") @db.Uuid
+  decidedAt          DateTime?      @map("decided_at") @db.Timestamptz
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  actions            ReviewAction[]
+
+  @@index([observationId])
+  @@map("review_cases")
+}
+
+model ReviewAction {
+  id                 String     @id @default(uuid()) @db.Uuid
+  organizationId     String     @map("organization_id") @db.Uuid
+  reviewCaseId       String     @map("review_case_id") @db.Uuid
+  reviewCase         ReviewCase @relation(fields: [reviewCaseId], references: [id])
+  actorId            String     @map("actor_id") @db.Uuid
+  actionType         String     @map("action_type")
+  notes              String?
+  priorState         String?    @map("prior_state")
+  newState           String?    @map("new_state")
+  linkedSubmissionId String?    @map("linked_submission_id") @db.Uuid
+  flagId             String?    @map("flag_id")
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([reviewCaseId, createdAt])
+  @@map("review_actions")
+}
+
+model AiAssessment {
+  id                  String   @id @default(uuid()) @db.Uuid
+  organizationId      String   @map("organization_id") @db.Uuid
+  submissionVersionId String   @map("submission_version_id") @db.Uuid
+  modelProvider       String   @map("model_provider")
+  modelName           String   @map("model_name")
+  promptVersion       String   @map("prompt_version")
+  resultSchemaVersion String   @map("result_schema_version")
+  status              String
+  flagsJson           Json?    @map("flags_json")
+  inputDigest         String   @map("input_digest")
+  latencyMs           Int?     @map("latency_ms")
+  errorCode           String?  @map("error_code")
+  humanLabel          String?  @map("human_label")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([submissionVersionId])
+  @@map("ai_assessments")
+}
+
+model Evaluation {
+  id                  String      @id @default(uuid()) @db.Uuid
+  organizationId      String      @map("organization_id") @db.Uuid
+  observationId       String      @map("observation_id") @db.Uuid
+  observation         Observation @relation(fields: [observationId], references: [id])
+  criterionVersionId  String      @map("criterion_version_id") @db.Uuid
+  submissionVersionId String      @map("submission_version_id") @db.Uuid
+  comparisonOperator  String      @map("comparison_operator")
+  observedCount       Int         @map("observed_count")
+  targetCount         Int         @map("target_count")
+  result              String
+  ruleVersion         String      @map("rule_version")
+  resultDigest        String      @map("result_digest")
+  evaluatedAt         DateTime    @default(now()) @map("evaluated_at") @db.Timestamptz
+
+  @@unique([observationId, submissionVersionId])
+  @@map("evaluations")
+}
+
+model Report {
+  id               String      @id @default(uuid()) @db.Uuid
+  organizationId   String      @map("organization_id") @db.Uuid
+  observationId    String      @map("observation_id") @db.Uuid
+  observation      Observation @relation(fields: [observationId], references: [id])
+  status           String
+  version          Int
+  idempotencyKey   String?     @map("idempotency_key")
+  manifestSha256   String      @map("manifest_sha256")
+  pdfStorageKey    String      @map("pdf_storage_key")
+  csvStorageKey    String      @map("csv_storage_key")
+  packetStorageKey String      @map("packet_storage_key")
+  generatedBy      String      @map("generated_by") @db.Uuid
+  generatedAt      DateTime    @default(now()) @map("generated_at") @db.Timestamptz
+  releasedAt       DateTime?   @map("released_at") @db.Timestamptz
+  shareGrants      ShareGrant[]
+
+  @@unique([observationId, version])
+  @@unique([organizationId, idempotencyKey])
+  @@map("reports")
+}
+
+model ShareGrant {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  reportId       String    @map("report_id") @db.Uuid
+  report         Report    @relation(fields: [reportId], references: [id])
+  recipientHint  String    @map("recipient_hint")
+  tokenHash      String    @unique @map("token_hash")
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz
+  downloadLimit  Int       @map("download_limit")
+  downloadsUsed  Int       @default(0) @map("downloads_used")
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz
+  grantedBy      String    @map("granted_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("share_grants")
+}
+
+model AuditEvent {
+  id               String   @id @default(uuid()) @db.Uuid
+  organizationId   String?  @map("organization_id") @db.Uuid
+  actorId          String?  @map("actor_id") @db.Uuid
+  actorType        String   @map("actor_type")
+  action           String
+  objectType       String   @map("object_type")
+  objectId         String?  @map("object_id")
+  traceId          String   @map("trace_id")
+  metadataRedacted Json     @default("{}") @map("metadata_redacted")
+  recordedAt       DateTime @default(now()) @map("recorded_at") @db.Timestamptz
+
+  @@index([organizationId, recordedAt])
+  @@map("audit_events")
+}
+
+model SystemAlert {
+  id              String    @id @default(uuid()) @db.Uuid
+  severity        String
+  category        String
+  sourceId        String?   @map("source_id")
+  state           String    @default("OPEN")
+  firstSeenAt     DateTime  @default(now()) @map("first_seen_at") @db.Timestamptz
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz
+  contextRedacted Json      @default("{}") @map("context_redacted")
+
+  @@index([severity, state])
+  @@map("system_alerts")
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@blindcount/db",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "migrate": "prisma migrate deploy",
+    "migrate:dev": "prisma migrate dev",
+    "generate": "prisma generate",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@prisma/client": "6.1.0" },
+  "devDependencies": { "prisma": "6.1.0", "typescript": "5.7.2" }
+}
