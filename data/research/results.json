@@ -1,0 +1,120 @@
+{
+  "source": "Cammelli, Six & Garrett (2026), Dryad doi:10.5061/dryad.v9s4mw77q, CC0-1.0",
+  "csv_sha256": "c07dce34ff0467142cdd449db5eeb67703e662ae2c941d6360f8323b222f564a",
+  "farms": 407,
+  "arms": {
+    "Information": 203,
+    "No Information": 204
+  },
+  "method": "Share of verification forms whose count was amended, first-visit fail minus first-visit pass, per arm. Equals the authors' contrast of margins from a saturated logit (collusion_analysis_v3.do).",
+  "by_tree_type": {
+    "seedlings": {
+      "Information": {
+        "failed_first_visit": {
+          "amended": 49,
+          "n": 146,
+          "rate": 0.3356
+        },
+        "passed_first_visit": {
+          "amended": 5,
+          "n": 57,
+          "rate": 0.0877
+        },
+        "excess_rate": 0.2479,
+        "excess_95ci_normal": [
+          0.1418,
+          0.354
+        ]
+      },
+      "No Information": {
+        "failed_first_visit": {
+          "amended": 26,
+          "n": 145,
+          "rate": 0.1793
+        },
+        "passed_first_visit": {
+          "amended": 4,
+          "n": 59,
+          "rate": 0.0678
+        },
+        "excess_rate": 0.1115,
+        "excess_95ci_normal": [
+          0.022,
+          0.201
+        ]
+      }
+    },
+    "wildlings": {
+      "Information": {
+        "failed_first_visit": {
+          "amended": 17,
+          "n": 146,
+          "rate": 0.1164
+        },
+        "passed_first_visit": {
+          "amended": 6,
+          "n": 57,
+          "rate": 0.1053
+        },
+        "excess_rate": 0.0112,
+        "excess_95ci_normal": [
+          -0.084,
+          0.1063
+        ]
+      },
+      "No Information": {
+        "failed_first_visit": {
+          "amended": 16,
+          "n": 145,
+          "rate": 0.1103
+        },
+        "passed_first_visit": {
+          "amended": 4,
+          "n": 59,
+          "rate": 0.0678
+        },
+        "excess_rate": 0.0425,
+        "excess_95ci_normal": [
+          -0.0394,
+          0.1245
+        ]
+      }
+    },
+    "naturally_occurring": {
+      "Information": {
+        "failed_first_visit": {
+          "amended": 13,
+          "n": 146,
+          "rate": 0.089
+        },
+        "passed_first_visit": {
+          "amended": 2,
+          "n": 57,
+          "rate": 0.0351
+        },
+        "excess_rate": 0.054,
+        "excess_95ci_normal": [
+          -0.0125,
+          0.1204
+        ]
+      },
+      "No Information": {
+        "failed_first_visit": {
+          "amended": 12,
+          "n": 145,
+          "rate": 0.0828
+        },
+        "passed_first_visit": {
+          "amended": 3,
+          "n": 59,
+          "rate": 0.0508
+        },
+        "excess_rate": 0.0319,
+        "excess_95ci_normal": [
+          -0.0399,
+          0.1037
+        ]
+      }
+    }
+  }
+}
