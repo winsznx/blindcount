@@ -1,0 +1,16 @@
+.tiles { display: grid; grid-template-columns: repeat(5, 1fr); border: 1px solid var(--line); border-radius: var(--r-card); background: var(--surface); box-shadow: var(--shadow-1); }
+.tile { padding: 20px 22px; display: grid; gap: 4px; }
+.tile + .tile { border-left: 1px solid var(--line); }
+.tileValue { font-size: 32px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.1; }
+.tileLabel { font-size: 13px; color: var(--ink-2); }
+.bar { height: 6px; width: 140px; border-radius: 99px; background: var(--surface-sunk); overflow: hidden; margin-bottom: 4px; }
+.bar span { display: block; height: 100%; background: var(--primary); border-radius: 99px; transition: width 400ms var(--ease); }
+.activity { list-style: none; margin: 0; padding: 6px 0; }
+.activity li { display: flex; justify-content: space-between; gap: 16px; padding: 10px 24px; font-size: 14px; }
+.activity li span::first-letter { text-transform: uppercase; }
+@media (max-width: 900px) {
+  .tiles { grid-template-columns: repeat(2, 1fr); }
+  .tile + .tile { border-left: 0; }
+  .tile:nth-child(even) { border-left: 1px solid var(--line); }
+  .tile:nth-child(n + 3) { border-top: 1px solid var(--line); }
+}

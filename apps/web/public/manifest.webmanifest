@@ -1,0 +1,1 @@
+{ "name": "BlindCount", "short_name": "BlindCount", "start_url": "/app", "display": "standalone", "background_color": "#F7F8F4", "theme_color": "#173B31", "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }] }

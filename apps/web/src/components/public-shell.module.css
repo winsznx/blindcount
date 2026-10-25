@@ -1,0 +1,31 @@
+.page { min-height: 100dvh; display: flex; flex-direction: column; }
+.skip { position: absolute; left: -9999px; top: 8px; z-index: 10; background: var(--surface); padding: 8px 12px; border-radius: 8px; }
+.skip:focus { left: 16px; }
+.header { position: sticky; top: 0; z-index: 20; background: rgba(247, 248, 244, 0.86); backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid transparent; }
+.header:has(+ main:not(:first-child)) { border-bottom-color: var(--line); }
+.inner { max-width: 1160px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; gap: 32px; }
+.brand { text-decoration: none; }
+.nav { display: flex; gap: 4px; flex: 1; }
+.nav a { color: var(--ink-2); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 12px; border-radius: 8px; transition: color 140ms, background-color 140ms; }
+.nav a:hover { color: var(--ink); background: var(--surface-sunk); }
+.actions { display: flex; gap: 6px; }
+.main { flex: 1; }
+.footer { border-top: 1px solid var(--line); background: var(--surface); margin-top: 96px; }
+.footInner { max-width: 1160px; margin: 0 auto; padding: 56px 24px 40px; display: grid; grid-template-columns: 1.2fr 2fr; gap: 48px; }
+.footBrand { display: grid; gap: 14px; align-content: start; max-width: 340px; font-size: 14px; }
+.footCols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.footCols div { display: grid; gap: 10px; align-content: start; }
+.footCols h4 { font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 4px; letter-spacing: 0; }
+.footCols a { color: var(--ink-2); text-decoration: none; font-size: 14px; }
+.footCols a:hover { color: var(--ink); }
+.footBase { max-width: 1160px; margin: 0 auto; padding: 18px 24px 28px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--ink-3); }
+@media (max-width: 860px) {
+  .nav { display: none; }
+  .inner { justify-content: space-between; padding: 0 16px; }
+  .footInner { grid-template-columns: 1fr; padding: 40px 16px 28px; }
+  .footCols { grid-template-columns: repeat(2, 1fr); }
+  .footBase { padding: 16px; }
+}
+@media (max-width: 420px) {
+  .actions :global(.btn-ghost) { display: none; }
+}

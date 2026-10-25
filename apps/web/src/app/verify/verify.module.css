@@ -1,0 +1,26 @@
+.drop { display: grid; justify-items: center; gap: 6px; padding: 40px 16px; border: 1.5px dashed var(--line-strong); border-radius: var(--r-card); background: var(--canvas); cursor: pointer; text-align: center; transition: border-color 140ms, background-color 140ms; }
+.drop:hover, .dragging { border-color: var(--primary); background: var(--accent-wash); }
+.drop:focus-within { box-shadow: var(--focus); }
+.drop svg { width: 28px; height: 28px; color: var(--primary); }
+.verdicts { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; }
+.verdict { display: flex; gap: 14px; padding: 20px 22px; border-radius: var(--r-card); border: 1px solid var(--line); background: var(--surface); }
+.verdict > svg { width: 26px; height: 26px; flex: none; }
+.verdict h2 { font-size: 20px; margin: 2px 0 6px; }
+.verdict p { font-size: 14px; color: var(--ink-2); }
+.vLabel { font-size: 12.5px; font-weight: 550; color: var(--ink-2); }
+.ok { border-color: #b9dcc9; background: var(--success-wash); }
+.ok > svg, .ok h2 { color: var(--success); }
+.bad { border-color: #e3c3c2; background: var(--error-wash); }
+.bad > svg, .bad h2 { color: var(--error); }
+.unk { border-color: #c9d5e3; background: var(--pending-wash); }
+.unk > svg, .unk h2 { color: var(--pending); }
+.neutral > svg { color: var(--ink-2); }
+.checks { list-style: none; margin: 0; padding: 4px 0; }
+.checks li { display: flex; gap: 12px; padding: 14px 24px; border-top: 1px solid var(--line); }
+.checks li:first-child { border-top: 0; }
+.checks li > svg { width: 18px; height: 18px; flex: none; margin-top: 2px; }
+.checks p { font-size: 13.5px; margin-top: 2px; word-break: break-word; }
+.PASS > svg { color: var(--success); }
+.FAIL > svg { color: var(--error); }
+.UNKNOWN > svg, .SKIPPED > svg { color: var(--pending); }
+@media (max-width: 720px) { .verdicts { grid-template-columns: 1fr; } }

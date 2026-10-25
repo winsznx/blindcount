@@ -1,0 +1,13 @@
+.steps { list-style: none; margin: 0 0 20px; padding: 0; display: flex; gap: 6px; flex-wrap: wrap; }
+.steps li { display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; font-size: 13.5px; font-weight: 550; color: var(--ink-3); background: transparent; }
+.n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; border: 1.5px solid var(--line-strong); }
+.current { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
+.current .n { border-color: var(--primary); color: var(--primary); }
+.done { color: var(--ink-2); }
+.done .n { background: var(--primary); border-color: var(--primary); color: #fff; }
+.roster { display: grid; gap: 12px; }
+.rosterRow { display: grid; grid-template-columns: 1fr 1fr 1.4fr auto; gap: 12px; align-items: end; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.preview { display: grid; gap: 14px; justify-items: start; max-width: 380px; padding: 20px; border-radius: 20px; border: 1px solid var(--line); background: var(--canvas); }
+.preview > div { width: 100%; }
+.fields { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 14px; display: grid; gap: 4px; }
+@media (max-width: 720px) { .rosterRow { grid-template-columns: 1fr 1fr; } }

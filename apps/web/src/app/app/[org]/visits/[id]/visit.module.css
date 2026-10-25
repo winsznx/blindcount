@@ -1,0 +1,16 @@
+.layout { max-width: 640px; }
+.blindNote { display: flex; gap: 14px; padding: 18px 20px; border-radius: var(--r-card); background: var(--accent-wash); color: var(--primary); }
+.blindNote > svg { width: 20px; height: 20px; flex: none; margin-top: 2px; }
+.blindNote strong { color: var(--ink); font-weight: 600; }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.photo { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface-sunk); }
+.photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.photoMeta { display: flex; justify-content: space-between; align-items: center; padding: 2px 4px 2px 10px; font-size: 12px; }
+.addPhoto { display: grid; place-items: center; gap: 8px; aspect-ratio: 4 / 3; min-height: 112px; border: 1.5px dashed var(--line-strong); border-radius: 10px; background: var(--surface); color: var(--primary); font: inherit; font-weight: 550; font-size: 14px; cursor: pointer; }
+.addPhoto:hover { border-color: var(--primary); background: var(--accent-wash); }
+.addPhoto svg { width: 24px; height: 24px; }
+.stickyCta { display: grid; gap: 6px; }
+@media (max-width: 960px) {
+  .stickyCta { position: sticky; bottom: 76px; padding: 12px 0 4px; background: linear-gradient(to top, var(--surface) 70%, transparent); }
+}
+.missing { display: grid; place-items: center; aspect-ratio: 4 / 3; padding: 8px; font-size: 12.5px; color: var(--error); text-align: center; background: var(--error-wash); }
