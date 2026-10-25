@@ -1,0 +1,3 @@
+api.blindcount.xyz {
+	reverse_proxy api:4000
+}
