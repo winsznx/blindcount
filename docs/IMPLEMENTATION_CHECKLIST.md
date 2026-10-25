@@ -1,6 +1,6 @@
 # Implementation checklist (PRD v1.0)
 
-**Done** means implemented and covered by an automated test. **Done (manual)** means implemented and exercised in the running app, without a dedicated assertion. **Needs input** means the code is complete and waits on a credential only the operator can provide.
+**Done** means implemented and covered by an automated test. **Done (manual)** means implemented and exercised in the running app, without a dedicated assertion.
 
 Test locations: `C` contracts, `X` crypto, `D` domain, `A` API integration (live Postgres + chain; also passes against Ethereum Sepolia), `L` CLI, `E` Playwright.
 
@@ -21,7 +21,7 @@ Test locations: `C` contracts, `X` crypto, `D` domain, `A` API integration (live
 | Demo data labelled; research cited and reproduced | Done | Programme `dataSource`, PDF banner, manifest `sourceType`; `data/research/reproduce.py` |
 | Backups, logs, abuse cases; no secrets committed | Done | `pnpm backup:verify`; log redaction of tokens; `.gitignore`; CI secret scan |
 | README and one-command local setup | Done | `pnpm setup:local` |
-| 3–5 minute film | In progress | Script in [DEMO.md](DEMO.md) |
+| 3–5 minute film | Done | 2K film (2560×1440) published; browser chrome shows the live blindcount.xyz |
 
 ## Functional requirements
 
@@ -68,7 +68,7 @@ Test locations: `C` contracts, `X` crypto, `D` domain, `A` API integration (live
 | FR-045 | `/verify` with FAIL and UNKNOWN | Done | A, E |
 | FR-046 | Security labels | Done | |
 | FR-047 | Target only after disclosure | Done | |
-| FR-048 | AI evidence review with explicit uncertainty | Needs input | Adapter, prompt, schema and quotas implemented; needs `AI_API_KEY` |
+| FR-048 | AI evidence review with explicit uncertainty | Done (manual) | Live on the Sepolia deployment; `claude-opus-5-5` multimodal check returns schema-compliant advisory assessments. Deterministic checks always run |
 | FR-049 | Duplicate and metadata checks | Done (manual) | Job after every anchor |
 | FR-050 | AI failure fallback | Done | A |
 | FR-051 | Aggregate metrics | Done (manual) | Overview |
@@ -78,7 +78,7 @@ Test locations: `C` contracts, `X` crypto, `D` domain, `A` API integration (live
 | FR-056 | Health probes | Done | A |
 | FR-057 | Validation with field errors | Done | A |
 | FR-059 | Backup and restore drill | Done | `pnpm backup:verify` |
-| Email delivery | Real inboxes for codes and invitations | Needs input | Resend adapter implemented; needs `RESEND_API_KEY` |
+| Email delivery | Real inboxes for codes and invitations | Done (manual) | Resend live from `noreply@blindcount.xyz`; real sign-in codes delivered |
 
 ## Roadmap after the hackathon
 
