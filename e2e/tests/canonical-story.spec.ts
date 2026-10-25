@@ -124,7 +124,7 @@ test("canonical story: blind collection, cohort guard, disclosure, review, indep
     await p.getByLabel("Notes").fill(INJECTION);
     await p.locator('input[type="file"]').setInputFiles({ name: `plot-${seed}.png`, mimeType: "image/png", buffer: png(seed) });
     await expect(p.getByAltText(/Evidence photo/)).toBeVisible();
-    await p.getByRole("checkbox", { name: /farmer was told/ }).check();
+    await p.getByText("The farmer was told how these observations").last().click();
     await shot(p, `05-field-form-${count}`);
     await p.getByRole("button", { name: "Review and finalize" }).click();
     await p.getByRole("checkbox", { name: "I confirm this is my original field observation" }).check();
@@ -156,7 +156,7 @@ test("canonical story: blind collection, cohort guard, disclosure, review, indep
   await audB.page.getByLabel("Notes").fill(INJECTION);
   await audB.page.locator('input[type="file"]').setInputFiles({ name: "plot-2.png", mimeType: "image/png", buffer: png(2) });
   await expect(audB.page.getByAltText(/Evidence photo/)).toBeVisible();
-  await audB.page.getByRole("checkbox", { name: /farmer was told/ }).check();
+  await audB.page.getByText("The farmer was told how these observations").last().click();
   await audB.page.getByRole("button", { name: "Review and finalize" }).click();
   await audB.page.getByRole("checkbox", { name: "I confirm this is my original field observation" }).check();
   await audB.page.getByRole("button", { name: "Finalize original submission" }).click();
@@ -223,7 +223,7 @@ test("canonical story: blind collection, cohort guard, disclosure, review, indep
   await audB.page.getByLabel("Corrected shade-tree count").fill("16");
   await audB.page.getByLabel("What changed").fill("Recounted the northern plot; four trees were missed.");
   await audB.page.locator('input[type="file"]').last().setInputFiles({ name: "recount.png", mimeType: "image/png", buffer: png(7) });
-  await audB.page.getByRole("checkbox", { name: /farmer was told/ }).check();
+  await audB.page.getByText("The farmer was told how these observations").last().click();
   await audB.page.getByRole("button", { name: "Sign and submit version 2" }).click();
   await expect(audB.page.getByText("Version 2:")).toBeVisible();
   await expect(audB.page.getByRole("listitem").filter({ hasText: "Version 2" }).getByText("Anchored")).toBeVisible({ timeout: CHAIN_WAIT });
