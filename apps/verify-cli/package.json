@@ -1,0 +1,13 @@
+{
+  "name": "@blindcount/verify-cli",
+  "private": true,
+  "type": "module",
+  "bin": { "blindcount-verify": "./src/cli.ts" },
+  "scripts": {
+    "start": "tsx src/cli.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": { "@blindcount/domain": "workspace:*" },
+  "devDependencies": { "tsx": "4.19.2", "typescript": "5.7.2", "vitest": "2.1.8", "@types/node": "22.10.2" }
+}
